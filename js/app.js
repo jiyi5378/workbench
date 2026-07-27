@@ -2301,69 +2301,74 @@ const App = {
   },
 
   initDragSort(container) {
-    let dragEl = null, startY = 0, startIdx = -1, currentIdx = -1;
-    const items = () => Array.from(container.querySelectorAll('.widget-manager-item'));
+    let dragEl = null, startIdx = -1;
 
-    const onDown = (e) => {
+    container.addEventListener('pointerdown', (e) => {
       const item = e.target.closest('.widget-manager-item');
       if (!item || e.target.closest('.toggle-switch')) return;
       e.preventDefault();
       dragEl = item;
-      startY = e.touches ? e.touches[0].clientY : e.clientY;
       startIdx = parseInt(item.dataset.idx);
-      currentIdx = startIdx;
       dragEl.style.opacity = '0.5';
       dragEl.style.zIndex = '10';
       dragEl.style.background = 'rgba(20,184,166,0.1)';
       dragEl.style.borderColor = 'rgba(20,184,166,0.3)';
-      dragEl.style.cursor = 'grabbing';
-    };
+    });
+
+    container.addEventListener('touchstart', (e) => {
+      const item = e.target.closest('.widget-manager-item');
+      if (!item || e.target.closest('.toggle-switch')) return;
+      e.preventDefault();
+      dragEl = item;
+      startIdx = parseInt(item.dataset.idx);
+      dragEl.style.opacity = '0.5';
+      dragEl.style.zIndex = '10';
+      dragEl.style.background = 'rgba(20,184,166,0.1)';
+      dragEl.style.borderColor = 'rgba(20,184,166,0.3)';
+    }, { passive: false });
 
     const onMove = (e) => {
       if (!dragEl) return;
-      e.preventDefault();
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const diff = clientY - startY;
-      dragEl.style.transform = `translateY(${diff}px)`;
-      dragEl.style.transition = 'none';
-
-      const all = items();
-      const rects = all.map(el => el.getBoundingClientRect());
-      let target = startIdx;
-      for (let i = 0; i < rects.length; i++) {
-        const mid = rects[i].top + rects[i].height / 2;
-        if (clientY < mid && i < target) target = i;
-        if (clientY > mid && i > target) target = i;
-      }
-      if (target !== currentIdx) {
-        currentIdx = target;
-        all.forEach((el, i) => {
-          if (i === startIdx) return;
-          const shift = i >= target && i < startIdx ? rects[startIdx].height + 6 : (i <= target && i > startIdx ? -(rects[startIdx].height + 6) : 0);
-          el.style.transform = `translateY(${shift}px)`;
-          el.style.transition = 'transform 0.2s';
-        });
-      }
+      const origY = dragEl._origY || (dragEl._origY = dragEl.getBoundingClientRect().top);
+      dragEl.style.transform = `translateY(${clientY - origY - dragEl.getBoundingClientRect().height/2}px)`;
     };
 
-    const onUp = async () => {
+    const onUp = async (e) => {
       if (!dragEl) return;
-      const all = items();
-      all.forEach(el => { el.style.transform = ''; el.style.transition = ''; el.style.opacity = ''; el.style.zIndex = ''; el.style.background = ''; el.style.borderColor = ''; el.style.cursor = ''; });
-      if (currentIdx !== startIdx && currentIdx >= 0 && currentIdx < all.length) {
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      dragEl.style.opacity = ''; dragEl.style.zIndex = ''; dragEl.style.background = '';
+      dragEl.style.borderColor = ''; dragEl.style.transform = '';
+      delete dragEl._origY;
+
+      // 计算目标位置：看拖拽元素中心点在哪个元素之后
+      const all = Array.from(container.querySelectorAll('.widget-manager-item'));
+      const dragMid = clientY;
+      let targetIdx = 0;
+      for (let i = 0; i < all.length; i++) {
+        const r = all[i].getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        if (dragMid > mid) targetIdx = i + 1;
+      }
+      // 限制范围
+      if (targetIdx > all.length) targetIdx = all.length;
+      
+      // 调整：如果目标在起始位置之后，减 1（因为移除后索引会变）
+      const finalIdx = targetIdx > startIdx ? targetIdx - 1 : targetIdx;
+
+      if (finalIdx !== startIdx) {
         const order = Array.from(document.querySelectorAll('#sidebarNav .sidebar-item[data-page]')).map(b => b.dataset.page).filter(p => NAV_ORDER.includes(p));
         const newOrder = [...order];
         const [moved] = newOrder.splice(startIdx, 1);
-        newOrder.splice(currentIdx, 0, moved);
+        newOrder.splice(finalIdx, 0, moved);
         this.applyNavOrder(newOrder);
         await this.saveUserConfig('navOrder', newOrder);
       }
       dragEl = null;
+      startIdx = -1;
       this.renderWidgetManager();
     };
 
-    container.addEventListener('pointerdown', onDown);
-    container.addEventListener('touchstart', onDown, { passive: false });
     document.addEventListener('pointermove', onMove);
     document.addEventListener('touchmove', onMove, { passive: false });
     document.addEventListener('pointerup', onUp);
