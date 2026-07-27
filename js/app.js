@@ -4,7 +4,7 @@
  */
 
 // 导航顺序常量（不含 home 和 settings）
-const NAV_ORDER = ['tasks', 'calendar', 'outfits', 'notes', 'finance', 'habits', 'birthdays', 'reviews', 'lookback'];
+const NAV_ORDER = ['tasks', 'notes', 'reviews', 'calendar', 'outfits', 'finance', 'habits', 'birthdays', 'lookback'];
 
 // 页面标题映射
 const PAGE_TITLES = {
