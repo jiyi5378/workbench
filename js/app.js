@@ -2269,6 +2269,7 @@ const App = {
     // 从当前 DOM 读取导航顺序
     const navItems = document.querySelectorAll('#sidebarNav .sidebar-item[data-page]');
     const currentOrder = Array.from(navItems).map(btn => btn.dataset.page).filter(p => NAV_ORDER.includes(p));
+    const hiddenPages = this.getHiddenPages();
 
     currentOrder.forEach((page, idx) => {
       const item = this.el('div', { className: 'widget-manager-item' });
@@ -2291,8 +2292,48 @@ const App = {
         onclick: () => this.moveWidget(currentOrder, idx, idx + 1)
       }));
       item.appendChild(btns);
+
+      // 显示/隐藏开关
+      const isVisible = !hiddenPages.includes(page);
+      const toggleLabel = this.el('label', { className: 'toggle-switch' });
+      const toggleInput = this.el('input', { type: 'checkbox' });
+      toggleInput.checked = isVisible;
+      toggleInput.addEventListener('change', () => this.toggleWidgetVisibility(page, toggleInput.checked));
+      toggleLabel.appendChild(toggleInput);
+      toggleLabel.appendChild(this.el('span', { className: 'toggle-slider' }));
+      item.appendChild(toggleLabel);
+
       container.appendChild(item);
     });
+  },
+
+  getHiddenPages() {
+    try {
+      return JSON.parse(localStorage.getItem('workbench_hidden_pages') || '[]');
+    } catch { return []; }
+  },
+
+  async toggleWidgetVisibility(page, visible) {
+    const hidden = this.getHiddenPages();
+    if (visible) {
+      const idx = hidden.indexOf(page);
+      if (idx >= 0) hidden.splice(idx, 1);
+    } else {
+      if (!hidden.includes(page)) hidden.push(page);
+    }
+    localStorage.setItem('workbench_hidden_pages', JSON.stringify(hidden));
+    this.applyNavVisibility();
+  },
+
+  applyNavVisibility() {
+    const hidden = this.getHiddenPages();
+    NAV_ORDER.forEach(page => {
+      const btn = document.querySelector(`#sidebarNav .sidebar-item[data-page="${page}"]`);
+      if (btn) {
+        btn.style.display = hidden.includes(page) ? 'none' : '';
+      }
+    });
+    this.renderWidgetManager();
   },
 
   getPageIcon(page) {
