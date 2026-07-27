@@ -718,13 +718,44 @@ const App = {
       this.navigate('tasks');
       setTimeout(() => { const inp = document.getElementById('tasksInput'); if (inp) inp.focus(); }, 100);
     }});
+    const btnLearn = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '💡 今日所学', onclick: () => this.openQuickLearn() });
     const btnFinance = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '💰 快速记账', onclick: () => {
       this.navigate('finance');
       setTimeout(() => { const inp = document.getElementById('financeAmount'); if (inp) inp.focus(); }, 100);
     }});
 
     container.appendChild(btnTask);
+    container.appendChild(btnLearn);
     container.appendChild(btnFinance);
+  },
+
+  openQuickLearn() {
+    const today = this.todayStr();
+    const textarea = this.el('textarea', { className: 'input', rows: '5', style: { width: '100%' }, placeholder: '今天学到了什么？记录一下...' });
+    const linkInput = this.el('input', { className: 'input', style: { width: '100%', marginTop: '8px' }, placeholder: '相关链接（可选）' });
+
+    const btnSave = this.el('button', { className: 'btn btn-primary btn-sm', textContent: '💾 保存', onclick: async () => {
+      const content = textarea.value.trim();
+      if (!content) { this.toast('请输入内容', 'error'); return; }
+      const link = linkInput.value.trim();
+      const body = link ? content + '\n\n🔗 ' + link : content;
+      const note = {
+        _id: Storage.genId(),
+        title: '📚 今日所学 · ' + this.fmtDate(today),
+        body: body,
+        tags: ['今日所学'],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      await Storage.put('notes', note);
+      if (CloudConfig.enabled) SyncEngine.push('notes', note);
+      this.closeModal();
+      this.toast('已保存到笔记', 'success');
+    }});
+
+    const btnCancel = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '取消', onclick: () => this.closeModal() });
+
+    this.showModal('💡 今日所学 · ' + this.fmtDate(today), [textarea, linkInput], [btnCancel, btnSave]);
   },
 
   // ==================== 任务清单 ====================
