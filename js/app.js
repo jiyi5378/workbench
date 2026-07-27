@@ -375,6 +375,9 @@ const App = {
           node.addEventListener(k.slice(2).toLowerCase(), props[k]);
         } else if (k === 'style' && typeof props[k] === 'object') {
           Object.assign(node.style, props[k]);
+        } else if (k === 'disabled') {
+          if (props[k]) node.setAttribute('disabled', '');
+          else node.removeAttribute('disabled');
         } else if (props[k] != null) {
           node.setAttribute(k, props[k]);
         }
@@ -2204,11 +2207,13 @@ const App = {
 
   // ==================== 设置 ====================
   renderSettings() {
-    // 昵称
     const nicknameInput = document.getElementById('nicknameInput');
     if (nicknameInput && this.nickname) {
       nicknameInput.value = this.nickname;
     }
+    this.renderThemeSwitcher();
+    this.renderWidgetManager();
+    this.renderCloudStatus();
   },
 
   renderThemeSwitcher() {
