@@ -10,7 +10,7 @@ const NAV_ORDER = ['tasks', 'notes', 'reviews', 'calendar', 'outfits', 'finance'
 const PAGE_TITLES = {
   home: '首页', tasks: '任务清单', calendar: '日程规划', outfits: '穿搭灵感',
   notes: '笔记备忘', finance: '记账', habits: '习惯打卡', birthdays: '生日纪念日',
-  reviews: '每日复盘', lookback: '上月今日', settings: '设置'
+  reviews: '每日所学', lookback: '上月今日', settings: '设置'
 };
 
 // 30 条金句
@@ -739,18 +739,17 @@ const App = {
       if (!content) { this.toast('请输入内容', 'error'); return; }
       const link = linkInput.value.trim();
       const body = link ? content + '\n\n🔗 ' + link : content;
-      const note = {
+      const review = {
         _id: Storage.genId(),
-        title: '📚 今日所学 · ' + this.fmtDate(today),
-        body: body,
+        date: today,
+        content: body,
         tags: ['今日所学'],
-        createdAt: Date.now(),
-        updatedAt: Date.now()
+        createdAt: Date.now()
       };
-      await Storage.put('notes', note);
-      if (CloudConfig.enabled) SyncEngine.push('notes', note);
+      await Storage.put('reviews', review);
+      if (CloudConfig.enabled) SyncEngine.push('reviews', review);
       this.closeModal();
-      this.toast('已保存到笔记', 'success');
+      this.toast('已保存到每日所学', 'success');
     }});
 
     const btnCancel = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '取消', onclick: () => this.closeModal() });
@@ -1933,7 +1932,7 @@ const App = {
     this.showModal(isNew ? '添加纪念日' : '编辑纪念日', body, isNew ? [btnSave] : [btnDelete, btnSave]);
   },
 
-  // ==================== 每日复盘 ====================
+  // ==================== 每日学到 ====================
   async renderReviews() {
     await this.renderReviewStats();
     await this.renderReviewInput();
@@ -1948,7 +1947,7 @@ const App = {
     const reviews = await Storage.getAll('reviews');
     const dates = reviews.map(r => r.date).sort().reverse();
 
-    // 连续复盘天数
+    // 连续天数
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1963,7 +1962,7 @@ const App = {
       }
     }
 
-    // 本周复盘天数
+    // 本周天数
     const dayOfWeek = today.getDay();
     const monday = new Date(today);
     monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
@@ -1976,15 +1975,15 @@ const App = {
 
     container.appendChild(this.el('div', { className: 'review-stat' }, [
       this.el('div', { className: 'review-stat-value', textContent: streak }),
-      this.el('div', { className: 'review-stat-label', textContent: '连续复盘天数' })
+      this.el('div', { className: 'review-stat-label', textContent: '连续天数' })
     ]));
     container.appendChild(this.el('div', { className: 'review-stat' }, [
       this.el('div', { className: 'review-stat-value', textContent: weekCount }),
-      this.el('div', { className: 'review-stat-label', textContent: '本周复盘天数' })
+      this.el('div', { className: 'review-stat-label', textContent: '本周天数' })
     ]));
     container.appendChild(this.el('div', { className: 'review-stat' }, [
       this.el('div', { className: 'review-stat-value', textContent: reviews.length }),
-      this.el('div', { className: 'review-stat-label', textContent: '总复盘次数' })
+      this.el('div', { className: 'review-stat-label', textContent: '总记录数' })
     ]));
   },
 
@@ -2012,7 +2011,7 @@ const App = {
     const tagsInput = document.getElementById('reviewTags');
     if (!input) return;
     const content = input.value.trim();
-    if (!content) { this.toast('请输入复盘内容', 'error'); return; }
+    if (!content) { this.toast('请输入内容', 'error'); return; }
 
     const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
     const today = this.todayStr();
@@ -2041,7 +2040,7 @@ const App = {
 
     this.renderReviews();
     this.renderQuote(false);
-    this.toast('复盘已保存', 'success');
+    this.toast('已保存', 'success');
   },
 
   async renderReviewsList() {
@@ -2055,7 +2054,7 @@ const App = {
     if (reviews.length === 0) {
       container.appendChild(this.el('div', { className: 'empty-state' }, [
         this.el('div', { className: 'empty-icon', textContent: '📓' }),
-        this.el('p', { textContent: '还没有复盘记录' })
+        this.el('p', { textContent: '还没有记录' })
       ]));
       return;
     }
@@ -2105,7 +2104,7 @@ const App = {
       this.toast('已删除', '');
     }});
 
-    this.showModal('编辑复盘 · ' + this.fmtDate(review.date), body, [btnDelete, btnSave]);
+    this.showModal('编辑 · ' + this.fmtDate(review.date), body, [btnDelete, btnSave]);
   },
 
   // ==================== 上月今日 ====================
@@ -2180,10 +2179,10 @@ const App = {
         grid.appendChild(card);
       }
 
-      // 复盘
+      // 每日学到
       if (dayReview.length > 0) {
         const card = this.el('div', { className: 'lookback-card' });
-        card.appendChild(this.el('h4', { textContent: '📓 复盘' }));
+        card.appendChild(this.el('h4', { textContent: '📓 每日学到' }));
         dayReview.forEach(r => {
           card.appendChild(this.el('div', { className: 'text-sm', style: { lineHeight: '1.5' }, textContent: r.content }));
         });
