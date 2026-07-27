@@ -718,7 +718,10 @@ const App = {
       this.navigate('tasks');
       setTimeout(() => { const inp = document.getElementById('tasksInput'); if (inp) inp.focus(); }, 100);
     }});
-    const btnLearn = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '💡 今日所学', onclick: () => this.openQuickLearn() });
+    const btnLearn = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '💡 今日所学', onclick: () => {
+      this.navigate('reviews');
+      setTimeout(() => { const inp = document.getElementById('reviewInput'); if (inp) inp.focus(); }, 100);
+    }});
     const btnFinance = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '💰 快速记账', onclick: () => {
       this.navigate('finance');
       setTimeout(() => { const inp = document.getElementById('financeAmount'); if (inp) inp.focus(); }, 100);
@@ -727,34 +730,6 @@ const App = {
     container.appendChild(btnTask);
     container.appendChild(btnLearn);
     container.appendChild(btnFinance);
-  },
-
-  openQuickLearn() {
-    const today = this.todayStr();
-    const textarea = this.el('textarea', { className: 'input', rows: '5', style: { width: '100%' }, placeholder: '今天学到了什么？记录一下...' });
-    const linkInput = this.el('input', { className: 'input', style: { width: '100%', marginTop: '8px' }, placeholder: '相关链接（可选）' });
-
-    const btnSave = this.el('button', { className: 'btn btn-primary btn-sm', textContent: '💾 保存', onclick: async () => {
-      const content = textarea.value.trim();
-      if (!content) { this.toast('请输入内容', 'error'); return; }
-      const link = linkInput.value.trim();
-      const body = link ? content + '\n\n🔗 ' + link : content;
-      const review = {
-        _id: Storage.generateId(),
-        date: today,
-        content: body,
-        tags: ['今日所学'],
-        createdAt: Date.now()
-      };
-      await Storage.put('reviews', review);
-      if (CloudConfig.enabled) SyncEngine.push('reviews', review);
-      this.closeModal();
-      this.toast('已保存到每日所学', 'success');
-    }});
-
-    const btnCancel = this.el('button', { className: 'btn btn-secondary btn-sm', textContent: '取消', onclick: () => this.closeModal() });
-
-    this.showModal('💡 今日所学 · ' + this.fmtDate(today), [textarea, linkInput], [btnCancel, btnSave]);
   },
 
   // ==================== 任务清单 ====================
