@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="工作台">
+  <meta name="description" content="个人工作台">
+  <title>个人工作台</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ====== 左侧导航栏 ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo">✦</span>
+      <span class="sidebar-title">个人工作台</span>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <button class="sidebar-item active" data-page="home">
+        <span class="sidebar-icon">🏠</span>
+        <span class="sidebar-label">首页</span>
+      </button>
+      <button class="sidebar-item" data-page="tasks">
+        <span class="sidebar-icon">✅</span>
+        <span class="sidebar-label">任务清单</span>
+        <span class="sidebar-badge" id="sidebarBadge-tasks"></span>
+      </button>
+      <button class="sidebar-item" data-page="calendar">
+        <span class="sidebar-icon">📅</span>
+        <span class="sidebar-label">日程规划</span>
+      </button>
+      <button class="sidebar-item" data-page="notes">
+        <span class="sidebar-icon">📝</span>
+        <span class="sidebar-label">笔记备忘</span>
+      </button>
+      <button class="sidebar-item" data-page="finance">
+        <span class="sidebar-icon">💰</span>
+        <span class="sidebar-label">记账</span>
+      </button>
+      <button class="sidebar-item" data-page="habits">
+        <span class="sidebar-icon">🎯</span>
+        <span class="sidebar-label">习惯打卡</span>
+      </button>
+      <button class="sidebar-item" data-page="birthdays">
+        <span class="sidebar-icon">🎂</span>
+        <span class="sidebar-label">生日纪念日</span>
+      </button>
+      <button class="sidebar-item" data-page="outfits">
+        <span class="sidebar-icon">👔</span>
+        <span class="sidebar-label">穿搭灵感</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-item" data-page="settings">
+        <span class="sidebar-icon">⚙️</span>
+        <span class="sidebar-label">设置</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ====== 右侧主内容区 ====== -->
+  <main class="main-area">
+
+    <!-- 顶部栏（移动端） -->
+    <header class="mobile-topbar" id="mobileTopbar">
+      <button class="icon-btn" id="btnMenuToggle" aria-label="菜单">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <span class="mobile-title" id="mobileTitle">首页</span>
+      <div style="width:36px"></div>
+    </header>
+
+    <!-- ====== 页面容器 ====== -->
+
+    <!-- 首页 -->
+    <div class="page active" id="page-home">
+      <div class="page-header">
+        <h2>今日概览</h2>
+        <span class="text-sm text-muted" id="todayDate"></span>
+      </div>
+      <div class="overview-cards" id="overviewCards"></div>
+
+      <!-- 待办快速区 -->
+      <div class="quick-section" id="quickTasks"></div>
+
+      <!-- 今日日程快速区 -->
+      <div class="quick-section" id="quickEvents"></div>
+    </div>
+
+    <!-- 任务清单 -->
+    <div class="page" id="page-tasks">
+      <div class="page-header">
+        <h2>✅ 任务清单</h2>
+        <span class="text-sm text-muted" id="tasksCount"></span>
+      </div>
+      <div class="widget-toolbar">
+        <input type="text" class="input flex-1" id="tasksInput" placeholder="添加新任务..." />
+        <button class="btn btn-primary btn-sm" id="btnAddTask">添加</button>
+      </div>
+      <div class="widget-list" id="tasksList"></div>
+    </div>
+
+    <!-- 日程规划 -->
+    <div class="page" id="page-calendar">
+      <div class="page-header">
+        <h2>📅 日程规划</h2>
+      </div>
+      <div class="widget-toolbar">
+        <input type="text" class="input flex-1" id="calendarInput" placeholder="添加日程..." />
+        <button class="btn btn-primary btn-sm" id="btnAddEvent">添加</button>
+      </div>
+      <div id="calendarWidget"></div>
+      <div class="widget-list mt-3" id="eventsList"></div>
+    </div>
+
+    <!-- 笔记备忘 -->
+    <div class="page" id="page-notes">
+      <div class="page-header">
+        <h2>📝 笔记备忘</h2>
+      </div>
+      <div class="widget-toolbar">
+        <input type="text" class="input flex-1" id="notesInput" placeholder="写笔记标题..." />
+        <button class="btn btn-primary btn-sm" id="btnAddNote">新建</button>
+      </div>
+      <div class="widget-list" id="notesList"></div>
+    </div>
+
+    <!-- 记账 -->
+    <div class="page" id="page-finance">
+      <div class="page-header">
+        <h2>💰 记账</h2>
+        <span class="text-sm text-muted" id="financeMonth"></span>
+      </div>
+      <div class="widget-toolbar">
+        <input type="number" class="input" id="financeAmount" placeholder="金额" style="width:120px" />
+        <select class="input" id="financeType" style="width:100px">
+          <option value="expense">支出</option>
+          <option value="income">收入</option>
+        </select>
+        <select class="input" id="financeCategory" style="width:100px">
+          <option>餐饮</option><option>交通</option><option>购物</option><option>娱乐</option>
+          <option>住房</option><option>医疗</option><option>教育</option><option>工资</option>
+          <option>理财</option><option>其他</option>
+        </select>
+        <button class="btn btn-primary btn-sm" id="btnAddTransaction">记录</button>
+      </div>
+      <div class="stat-row" id="financeStats"></div>
+      <div class="widget-list mt-3" id="transactionsList"></div>
+    </div>
+
+    <!-- 习惯打卡 -->
+    <div class="page" id="page-habits">
+      <div class="page-header">
+        <h2>🎯 习惯打卡</h2>
+      </div>
+      <div class="widget-toolbar">
+        <input type="text" class="input flex-1" id="habitsInput" placeholder="添加新习惯..." />
+        <button class="btn btn-primary btn-sm" id="btnAddHabit">添加</button>
+      </div>
+      <div class="widget-list" id="habitsList"></div>
+    </div>
+
+    <!-- 生日纪念日 -->
+    <div class="page" id="page-birthdays">
+      <div class="page-header">
+        <h2>🎂 生日纪念日</h2>
+      </div>
+      <div class="widget-toolbar">
+        <button class="btn btn-primary btn-sm" id="btnAddBirthday">+ 添加纪念日</button>
+      </div>
+      <div class="widget-list" id="birthdaysList"></div>
+    </div>
+
+    <!-- 穿搭灵感 -->
+    <div class="page" id="page-outfits">
+      <div class="page-header">
+        <h2>👔 穿搭灵感</h2>
+      </div>
+      <div id="colorAdvice"></div>
+      <div class="widget-toolbar mt-3">
+        <input type="text" class="input flex-1" id="outfitsInput" placeholder="粘贴小红书穿搭链接..." />
+        <button class="btn btn-primary btn-sm" id="btnAddOutfit">收藏</button>
+      </div>
+      <div class="widget-list" id="outfitsList"></div>
+    </div>
+
+    <!-- 设置 -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h2>⚙️ 设置</h2>
+      </div>
+      <div class="settings-content">
+        <section class="settings-section">
+          <h3>板块管理</h3>
+          <p class="settings-desc">拖拽调整顺序，勾选启用板块</p>
+          <div id="widgetManager" class="widget-manager"></div>
+        </section>
+
+        <section class="settings-section">
+          <h3>云同步</h3>
+          <div id="cloudSyncStatus" class="cloud-sync-status">
+            <span class="sync-indicator offline"></span>
+            <span id="syncStatusText">未配置云同步</span>
+          </div>
+          <button id="btnCloudConfig" class="btn btn-secondary btn-sm">配置微信云开发</button>
+        </section>
+
+        <section class="settings-section">
+          <h3>数据管理</h3>
+          <div class="data-actions">
+            <button id="btnExportData" class="btn btn-secondary btn-sm">导出数据</button>
+            <button id="btnImportData" class="btn btn-secondary btn-sm">导入数据</button>
+            <button id="btnClearData" class="btn btn-danger btn-sm">清空本地数据</button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>关于</h3>
+          <p class="settings-desc">个人工作台 v1.0 · 模块化 · 可扩展</p>
+        </section>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- 遮罩层（移动端菜单） -->
+<div class="overlay hidden" id="overlay"></div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<!-- CloudBase SDK -->
+<script src="https://imgcache.qq.com/qcloud/cloudbase-js-sdk/2.7.12/cloudbase.full.js"></script>
+
+<!-- 应用脚本 -->
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/ui/components.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
