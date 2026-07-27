@@ -307,6 +307,11 @@ const App = {
     return div.innerHTML;
   },
 
+  getPriorityLabel(p) {
+    const labels = { 0: '急重', 1: '急轻', 2: '重缓', 3: '轻缓' };
+    return labels[p != null ? p : 3] || '轻缓';
+  },
+
   toDateStr(d) {
     const dt = d instanceof Date ? d : new Date(d);
     const y = dt.getFullYear();
@@ -602,8 +607,8 @@ const App = {
 
     const tasks = await Storage.getAll('tasks');
     const pending = tasks.filter(t => !t.completed).sort((a, b) => {
-      const pa = a.priority || 3;
-      const pb = b.priority || 3;
+      const pa = a.priority != null ? a.priority : 3;
+      const pb = b.priority != null ? b.priority : 3;
       if (pa !== pb) return pa - pb;
       return 0;
     }).slice(0, 5);
@@ -731,10 +736,10 @@ const App = {
       { key: 'all', label: '全部' },
       { key: 'pending', label: '待办' },
       { key: 'done', label: '已完成' },
-      { key: '0', label: 'P0' },
-      { key: '1', label: 'P1' },
-      { key: '2', label: 'P2' },
-      { key: '3', label: 'P3' }
+      { key: '0', label: '急重' },
+      { key: '1', label: '急轻' },
+      { key: '2', label: '重缓' },
+      { key: '3', label: '轻缓' }
     ];
     filters.forEach(f => {
       const tag = this.el('button', {
@@ -825,7 +830,7 @@ const App = {
       const info = this.el('div', { style: { flex: '1', minWidth: '0' } });
       info.appendChild(this.el('div', { className: 'task-title truncate' + (t.completed ? ' completed' : ''), textContent: t.title }));
       const meta = this.el('div', { className: 'text-xs text-muted', style: { display: 'flex', gap: '8px' } });
-      meta.appendChild(this.el('span', { className: 'tag tag-p' + (t.priority || 3), textContent: 'P' + (t.priority || 3) }));
+      meta.appendChild(this.el('span', { className: 'tag tag-p' + (t.priority != null ? t.priority : 3), textContent: App.getPriorityLabel(t.priority) }));
       if (t.dueDate) meta.appendChild(this.el('span', { textContent: '📅 ' + this.fmtDate(t.dueDate) }));
       info.appendChild(meta);
       item.appendChild(info);
@@ -851,8 +856,8 @@ const App = {
     const titleInput = this.el('input', { className: 'input', style: { width: '100%', marginBottom: '10px' }, value: task.title || '' });
     const prioritySelect = this.el('select', { className: 'input', style: { width: '100%', marginBottom: '10px' } });
     [0, 1, 2, 3].forEach(p => {
-      const opt = this.el('option', { value: p, textContent: 'P' + p + (p === 0 ? ' (紧急)' : p === 3 ? ' (低)' : '') });
-      if ((task.priority || 3) === p) opt.selected = true;
+      const opt = this.el('option', { value: p, textContent: this.getPriorityLabel(p) });
+      if ((task.priority != null ? task.priority : 3) === p) opt.selected = true;
       prioritySelect.appendChild(opt);
     });
     const dateInput = this.el('input', { type: 'date', className: 'input', style: { width: '100%', marginBottom: '10px' }, value: task.dueDate || '' });
