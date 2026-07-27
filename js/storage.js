@@ -4,11 +4,11 @@
  */
 const Storage = {
   DB_NAME: 'WorkbenchDB',
-  DB_VERSION: 1,
+  DB_VERSION: 2,
   _db: null,
   
   // 集合列表
-  COLLECTIONS: ['tasks', 'events', 'notes', 'transactions', 'habits', 'birthdays', 'outfits', 'userConfig'],
+  COLLECTIONS: ['tasks', 'events', 'notes', 'transactions', 'habits', 'birthdays', 'outfits', 'userConfig', 'reviews'],
   
   /**
    * 初始化 IndexedDB
