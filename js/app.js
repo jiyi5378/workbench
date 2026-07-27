@@ -740,7 +740,7 @@ const App = {
       const link = linkInput.value.trim();
       const body = link ? content + '\n\n🔗 ' + link : content;
       const review = {
-        _id: Storage.genId(),
+        _id: Storage.generateId(),
         date: today,
         content: body,
         tags: ['今日所学'],
