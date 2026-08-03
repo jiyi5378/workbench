@@ -1,0 +1,54 @@
+{
+  "tasks": [
+    {
+      "_id": "ms31w48aukpu67k1x",
+      "title": "小红书文案",
+      "completed": true,
+      "priority": 1,
+      "dueDate": "2026-07-27",
+      "note": "",
+      "createdAt": 1785146092138,
+      "completedAt": 1785155280482,
+      "updatedAt": 1785155279831
+    }
+  ],
+  "events": [],
+  "notes": [],
+  "transactions": [],
+  "habits": [],
+  "birthdays": [],
+  "outfits": [],
+  "userConfig": [
+    {
+      "_id": "navOrder",
+      "value": [
+        "tasks",
+        "calendar",
+        "outfits",
+        "notes",
+        "birthdays",
+        "reviews",
+        "lookback",
+        "finance",
+        "habits"
+      ],
+      "updatedAt": 1785772159072
+    },
+    {
+      "_id": "nickname",
+      "value": "乌",
+      "updatedAt": 1785142398567
+    }
+  ],
+  "reviews": [
+    {
+      "_id": "ms3778633kw0jnxls",
+      "date": "2026-07-27",
+      "content": "预期管理很重要，对别人的，和告诉别人对我们的",
+      "tags": [
+        "社交"
+      ],
+      "createdAt": 1785155008539
+    }
+  ]
+}
