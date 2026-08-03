@@ -90,11 +90,26 @@ const App = {
       console.error('存储初始化失败', e);
     }
 
+    // GitHub 云同步初始化 + 启动拉取
+    GitHubSync.init();
+    if (GitHubSync.isEnabled()) {
+      const ok = await GitHubSync.pull();
+      if (ok) {
+        // 拉取成功，用云端数据重新渲染
+        await this.loadUserConfig();
+        this.updateNicknameDisplay();
+        this.renderThemeSwitcher();
+      }
+    }
+
     // 加载用户配置
     await this.loadUserConfig();
 
     // 绑定全局事件
     this.bindGlobalEvents();
+
+    // 监听数据变更 → 自动同步到云端
+    window.addEventListener('wb:sync', () => this.scheduleCloudSync());
 
     // 渲染各模块
     this.renderTasksFilter();
@@ -246,6 +261,46 @@ const App = {
     if (btnClearData) btnClearData.addEventListener('click', () => this.clearAllData());
     const btnCloudConfig = document.getElementById('btnCloudConfig');
     if (btnCloudConfig) btnCloudConfig.addEventListener('click', () => this.openCloudConfig());
+
+    // ===== GitHub 云同步 =====
+    const btnSaveGithubToken = document.getElementById('btnSaveGithubToken');
+    if (btnSaveGithubToken) btnSaveGithubToken.addEventListener('click', () => this.saveGithubToken());
+    const btnGithubSyncNow = document.getElementById('btnGithubSyncNow');
+    if (btnGithubSyncNow) btnGithubSyncNow.addEventListener('click', () => this.manualCloudSync());
+  },
+
+  async saveGithubToken() {
+    const input = document.getElementById('githubTokenInput');
+    if (!input) return;
+    const token = input.value.trim();
+    if (!token) { this.toast('请输入 Token', 'error'); return; }
+    GitHubSync.saveToken(token);
+    this.toast('正在验证并同步...', '');
+    // 先拉取云端覆盖本地，再标记启用
+    const ok = await GitHubSync.pull();
+    this.renderCloudStatus();
+    if (ok) {
+      await this.loadUserConfig();
+      this.renderThemeSwitcher();
+      this.updateNicknameDisplay();
+      this.renderTasks();
+      this.renderCalendar();
+      this.renderOutfits();
+      this.renderNotes();
+      this.renderFinance();
+      this.renderHabits();
+      this.renderBirthdays();
+      this.renderReviews();
+      this.renderLookback();
+      this.renderHome();
+      this.updateBadges();
+      this.toast('GitHub 同步已启用', 'success');
+    } else {
+      // 云端无数据，直接推送本地
+      const pushed = await GitHubSync.push();
+      this.renderCloudStatus();
+      this.toast(pushed ? 'GitHub 同步已启用' : 'Token 可能无效', pushed ? 'success' : 'error');
+    }
   },
 
   // ==================== 导航 ====================
@@ -490,6 +545,51 @@ const App = {
     const pending = tasks.filter(t => !t.completed).length;
     const badge = document.getElementById('sidebarBadge-tasks');
     if (badge) badge.textContent = pending > 0 ? pending : '';
+  },
+
+  // ==================== GitHub 云同步 ====================
+  scheduleCloudSync() {
+    if (!GitHubSync.isEnabled()) return;
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => {
+      GitHubSync.push().then(ok => {
+        if (ok) {
+          this.renderCloudStatus();
+          console.log('[App] 数据已同步到 GitHub');
+        } else {
+          this.toast('云端同步失败', 'error');
+        }
+      });
+    }, 2000);
+  },
+
+  async manualCloudSync() {
+    this.toast('正在同步...', '');
+    const ok = await GitHubSync.pull();
+    if (ok) {
+      // 用云端数据刷新整个应用
+      await this.loadUserConfig();
+      this.renderThemeSwitcher();
+      this.updateNicknameDisplay();
+      this.renderTasks();
+      this.renderCalendar();
+      this.renderOutfits();
+      this.renderNotes();
+      this.renderFinance();
+      this.renderHabits();
+      this.renderBirthdays();
+      this.renderReviews();
+      this.renderLookback();
+      this.renderHome();
+      this.updateBadges();
+      this.renderCloudStatus();
+      this.toast('已从云端拉取', 'success');
+    } else {
+      // 拉取失败则尝试推送本地
+      const pushed = await GitHubSync.push();
+      this.renderCloudStatus();
+      this.toast(pushed ? '已推送到云端' : '同步失败', pushed ? 'success' : 'error');
+    }
   },
 
   // ==================== 首页 ====================
@@ -2221,9 +2321,39 @@ const App = {
     if (nicknameInput && this.nickname) {
       nicknameInput.value = this.nickname;
     }
+    // GitHub Token 回填（出于安全只显示掩码）
+    const githubTokenInput = document.getElementById('githubTokenInput');
+    if (githubTokenInput && GitHubSync.token) {
+      githubTokenInput.value = GitHubSync.token.substring(0, 4) + '••••••••' + GitHubSync.token.substring(GitHubSync.token.length - 4);
+      githubTokenInput.dataset.masked = '1';
+    }
     this.renderThemeSwitcher();
     this.renderWidgetManager();
     this.renderCloudStatus();
+  },
+
+  async openCloudConfig() {
+    const envInput = this.el('input', { className: 'input', style: { width: '100%', marginBottom: '10px' }, placeholder: '微信云开发环境 ID', value: CloudConfig.env || '' });
+    const body = [
+      this.el('p', { className: 'text-sm text-muted', style: { marginBottom: '10px' }, textContent: '填入微信云开发环境 ID 后点击保存，将自动初始化云同步。' }),
+      envInput
+    ];
+    const btnSave = this.el('button', { className: 'btn btn-primary btn-sm', textContent: '保存并初始化', onclick: async () => {
+      const env = envInput.value.trim();
+      if (!env) { this.toast('请输入环境 ID', 'error'); return; }
+      CloudConfig.env = env;
+      this.closeModal();
+      this.toast('正在初始化...', '');
+      const ok = await CloudConfig.init();
+      if (ok) {
+        await SyncEngine.init();
+        this.renderCloudStatus();
+        this.toast('云同步已启用', 'success');
+      } else {
+        this.toast('初始化失败，请检查 SDK 是否加载', 'error');
+      }
+    }});
+    this.showModal('配置微信云开发', body, [btnSave]);
   },
 
   renderThemeSwitcher() {
@@ -2454,37 +2584,16 @@ const App = {
     const indicator = document.querySelector('.sync-indicator');
     const textEl = document.getElementById('syncStatusText');
     if (!indicator || !textEl) return;
-    if (CloudConfig.enabled) {
+    if (GitHubSync.isEnabled()) {
+      indicator.className = 'sync-indicator online';
+      textEl.textContent = 'GitHub 已同步 · ' + GitHubSync.formatLastSync();
+    } else if (CloudConfig.enabled) {
       indicator.className = 'sync-indicator online';
       textEl.textContent = '已连接 (uid: ' + (CloudConfig.uid || '').substring(0, 8) + '...)';
     } else {
       indicator.className = 'sync-indicator offline';
       textEl.textContent = '未配置云同步';
     }
-  },
-
-  openCloudConfig() {
-    const envInput = this.el('input', { className: 'input', style: { width: '100%', marginBottom: '10px' }, placeholder: '微信云开发环境 ID', value: CloudConfig.env || '' });
-    const body = [
-      this.el('p', { className: 'text-sm text-muted', style: { marginBottom: '10px' }, textContent: '填入微信云开发环境 ID 后点击保存，将自动初始化云同步。' }),
-      envInput
-    ];
-    const btnSave = this.el('button', { className: 'btn btn-primary btn-sm', textContent: '保存并初始化', onclick: async () => {
-      const env = envInput.value.trim();
-      if (!env) { this.toast('请输入环境 ID', 'error'); return; }
-      CloudConfig.env = env;
-      this.closeModal();
-      this.toast('正在初始化...', '');
-      const ok = await CloudConfig.init();
-      if (ok) {
-        await SyncEngine.init();
-        this.renderCloudStatus();
-        this.toast('云同步已启用', 'success');
-      } else {
-        this.toast('初始化失败，请检查 SDK 是否加载', 'error');
-      }
-    }});
-    this.showModal('配置微信云开发', body, [btnSave]);
   },
 
   async exportData() {

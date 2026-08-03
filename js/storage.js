@@ -76,7 +76,7 @@ const Storage = {
       const tx = this._db.transaction(collection, 'readwrite');
       const store = tx.objectStore(collection);
       const req = store.put(doc);
-      req.onsuccess = () => resolve(doc);
+      req.onsuccess = () => { window.dispatchEvent(new Event('wb:sync')); resolve(doc); };
       req.onerror = () => reject(req.error);
     });
   },
@@ -99,7 +99,7 @@ const Storage = {
       const tx = this._db.transaction(collection, 'readwrite');
       const store = tx.objectStore(collection);
       const req = store.delete(id);
-      req.onsuccess = () => resolve(true);
+      req.onsuccess = () => { window.dispatchEvent(new Event('wb:sync')); resolve(true); };
       req.onerror = () => reject(req.error);
     });
   },
@@ -113,7 +113,7 @@ const Storage = {
       const tx = this._db.transaction(collection, 'readwrite');
       const store = tx.objectStore(collection);
       const req = store.clear();
-      req.onsuccess = () => resolve();
+      req.onsuccess = () => { window.dispatchEvent(new Event('wb:sync')); resolve(); };
       req.onerror = () => reject(req.error);
     });
   },
