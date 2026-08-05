@@ -21,7 +21,14 @@
       "createdAt": 1785772466806
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "_id": "msg86858398zv6r3p",
+      "title": "skill进阶教学√",
+      "date": "2026-08-05",
+      "createdAt": 1785942701756
+    }
+  ],
   "notes": [],
   "transactions": [],
   "habits": [],
