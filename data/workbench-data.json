@@ -60,6 +60,11 @@
       "_id": "nickname",
       "value": "乌",
       "updatedAt": 1785142398567
+    },
+    {
+      "_id": "theme",
+      "value": "light",
+      "updatedAt": 1786029078404
     }
   ],
   "reviews": [
