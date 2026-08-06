@@ -1,0 +1,103 @@
+/* ============================================================
+   吉伊卡哇 (Chiikawa) 主题 — 个人工作台 workbench
+   用法：在 index.html 的 <head> 里，style.css 之后加
+   <link rel="stylesheet" href="chiikawa-theme.css">
+   并在 </body> 前加 <script src="chiikawa-theme.js"></script>
+   主题仅通过 body.chiikawa 作用，不改动原 style.css。
+   ============================================================ */
+
+/* —— 1. 配色：奶黄底 + 粉/蜜桃强调色 —— */
+body.chiikawa {
+  --bg: #fdf1e6;
+  --bg2: rgba(255, 246, 236, 0.80);
+  --card: rgba(255, 251, 245, 0.88);
+  --card-hover: rgba(255, 254, 250, 0.98);
+  --input-bg: rgba(255, 250, 244, 0.94);
+  --border: rgba(222, 184, 158, 0.32);
+  --border-hover: rgba(222, 184, 158, 0.62);
+  --text: #5b4636;
+  --text2: #94795f;
+  --text3: #b89e87;
+  --accent: #ff9bb3;
+  --accent2: #ffc09a;
+  --ag: linear-gradient(135deg, #ffb3c8, #ffd2a6);
+  --success: #79c6a0;
+  --warning: #f4b25f;
+  --danger: #ff8a9b;
+  --p0: #ff8a9b; --p1: #f4b25f; --p2: #ffb3c8; --p3: #d3c0ad;
+  --shadow: 0 1px 3px rgba(196, 156, 122, 0.08), 0 8px 24px rgba(196, 156, 122, 0.07);
+  --shadow-hover: 0 2px 8px rgba(196, 156, 122, 0.12), 0 12px 32px rgba(196, 156, 122, 0.12);
+}
+
+/* 背景柔光：粉 + 蜜桃 + 奶黄，取代原本的青蓝调 */
+body.chiikawa::before {
+  background:
+    radial-gradient(ellipse 60% 60% at 12% 18%, rgba(255, 155, 179, 0.16) 0%, transparent 52%),
+    radial-gradient(ellipse 60% 70% at 88% 82%, rgba(255, 192, 154, 0.14) 0%, transparent 52%),
+    radial-gradient(ellipse 50% 50% at 78% 12%, rgba(255, 224, 160, 0.10) 0%, transparent 50%);
+}
+
+/* 让侧栏/卡片也带上一点暖意的光泽 */
+body.chiikawa .sidebar { box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.6); }
+body.chiikawa .sidebar-logo { box-shadow: 0 4px 12px rgba(255, 155, 179, 0.45); }
+body.chiikawa .quote-card { box-shadow: 0 4px 20px rgba(255, 155, 179, 0.28); }
+body.chiikawa .overview-card-icon { background: rgba(255, 155, 179, 0.14); }
+body.chiikawa .sidebar-item.active { box-shadow: 0 4px 14px rgba(255, 155, 179, 0.38); }
+body.chiikawa .filter-tag.active { box-shadow: 0 2px 8px rgba(255, 155, 179, 0.30); }
+body.chiikawa .theme-option.active { box-shadow: 0 4px 14px rgba(255, 155, 179, 0.38); }
+
+/* —— 2. 侧栏顶部：三只角色一字排开（栗子馒头 / 飞鼠 / 吉伊）—— */
+.chiikawa-sidebar-chars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.chiikawa-char {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 2px 4px rgba(196, 156, 122, 0.25));
+  transition: transform .2s ease;
+  cursor: default;
+}
+.chiikawa-char:hover { transform: translateY(-4px) rotate(-3deg); }
+.chiikawa-char:nth-child(2):hover { transform: translateY(-5px) rotate(3deg); }
+
+/* —— 3. 首页右下角：吉伊+乌萨奇+小八 叠叠乐贴图 —— */
+.chiikawa-sticker {
+  position: fixed;
+  right: 18px;
+  bottom: 16px;
+  width: 132px;
+  height: auto;
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0.96;
+  filter: drop-shadow(0 6px 14px rgba(196, 156, 122, 0.30));
+  animation: chiikawa-float 4.5s ease-in-out infinite;
+}
+@keyframes chiikawa-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+/* —— 4. 小屏（移动端顶栏）也放一只角色 —— */
+body.chiikawa .mobile-topbar { position: relative; }
+.chiikawa-mobile-char {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* 尊重用户的减弱动态偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .chiikawa-sticker, .chiikawa-char { animation: none !important; transition: none !important; }
+}
