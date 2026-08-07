@@ -54,7 +54,7 @@
         "finance",
         "habits"
       ],
-      "updatedAt": 1786074929250
+      "updatedAt": 1786076127906
     },
     {
       "_id": "nickname",
@@ -64,7 +64,7 @@
     {
       "_id": "theme",
       "value": "light",
-      "updatedAt": 1786033322387
+      "updatedAt": 1786076132840
     }
   ],
   "reviews": [
