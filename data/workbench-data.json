@@ -14,11 +14,12 @@
     {
       "_id": "msdeti0my30aqge07",
       "title": "33333",
-      "completed": false,
+      "completed": true,
       "priority": 3,
       "dueDate": "",
       "note": "",
-      "createdAt": 1785772466806
+      "createdAt": 1785772466806,
+      "completedAt": 1786076320330
     }
   ],
   "events": [
